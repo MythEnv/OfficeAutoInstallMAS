@@ -15,6 +15,23 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
     exit
 }
 
+# Función para redimensionar la terminal y evitar bugs visuales (Buffer Scrolling)
+function Resize-Terminal {
+    try {
+        $ws = $Host.UI.RawUI.WindowSize
+        $bs = $Host.UI.RawUI.BufferSize
+        $changed = $false
+        if ($ws.Width -lt 85) { $ws.Width = 85; $changed = $true }
+        if ($ws.Height -lt 40) { $ws.Height = 40; $changed = $true } # Altura ajustada a 40 para evitar saltos
+        if ($changed) {
+            if ($bs.Width -lt $ws.Width) { $bs.Width = $ws.Width }
+            if ($bs.Height -lt $ws.Height) { $bs.Height = $ws.Height }
+            $Host.UI.RawUI.BufferSize = $bs
+            $Host.UI.RawUI.WindowSize = $ws
+        }
+    } catch {}
+}
+
 # Funcion para efecto de escritura tipo videojuego (RPG)
 function Write-LoreText {
     param([string]$Text, [int]$Delay = 25, [ConsoleColor]$Color = "Yellow")
@@ -245,7 +262,8 @@ function Start-ConsoleRoulette {
         Write-Host " | " -NoNewline -ForegroundColor DarkGreen
         Write-Host "BLACK" -NoNewline -ForegroundColor DarkGray
         Write-Host " |   ODD   | 19 to 36|" -ForegroundColor White
-        Write-Host "          +---------+---------+---------+---------+---------+---------+" -ForegroundColor DarkGreen
+        # -NoNewline al final para evitar scrolls no deseados
+        Write-Host "          +---------+---------+---------+---------+---------+---------+" -ForegroundColor DarkGreen -NoNewline
     }
 
     while ($true) {
@@ -349,6 +367,7 @@ function Start-ConsoleRoulette {
 }
 
 function Show-ArcadeMenu {
+    Resize-Terminal # Aseguramos que la consola tenga tamaño suficiente para evitar bugs
     while ($true) {
         [Console]::Clear()
         Write-Host "========================================================" -ForegroundColor Yellow
@@ -493,24 +512,16 @@ Start-Sleep -Seconds 1
 
 Write-Host "Activando Office de forma silenciosa, por favor espera..." -ForegroundColor Yellow
 
-# --- INICIO DE LA LÓGICA DE ACTIVACIÓN POR DESCARGA TEMPORAL ---
-# URL Raw del activador en tu repositorio. 
-# IMPORTANTE: Si Ohook_Activation_AIO.cmd está dentro de una subcarpeta, agrégala a esta URL.
+# --- INICIO DE LA LÓGICA DE ACTIVACIÓN CORREGIDA ---
 $urlActivador = "https://raw.githubusercontent.com/MythEnv/OfficeAutoInstallMAS/refs/heads/master/MAS/Ohook_Activation_AIO.cmd"
-
-# Definir la ruta temporal donde se guardará el archivo por unos segundos
 $rutaTemporal = Join-Path -Path $env:TEMP -ChildPath "Ohook_Activation_AIO.cmd"
 
 try {
-    # Descargar el activador
     Invoke-RestMethod -Uri $urlActivador -OutFile $rutaTemporal
 
-    # Verificar y ejecutar
     if (Test-Path $rutaTemporal) {
-        # El parámetro /u asegura que el .cmd no muestre su menú interactivo
-        Start-Process -FilePath cmd.exe -ArgumentList "/c `"$rutaTemporal`" /u" -Wait -WindowStyle Hidden
-        
-        # Eliminar el archivo descargado para no dejar rastro
+        # Ejecución nativa sin cmd.exe /c para evitar problemas de comillas con el flag /u
+        Start-Process -FilePath $rutaTemporal -ArgumentList "/u" -Wait -WindowStyle Hidden
         Remove-Item -Path $rutaTemporal -Force
     } else {
         Write-Host "`n[Error]: No se pudo guardar el archivo temporal de activación." -ForegroundColor Red
