@@ -496,7 +496,7 @@ Write-Host "Activando Office de forma silenciosa, por favor espera..." -Foregrou
 # --- INICIO DE LA LÓGICA DE ACTIVACIÓN POR DESCARGA TEMPORAL ---
 # URL Raw del activador en tu repositorio. 
 # IMPORTANTE: Si Ohook_Activation_AIO.cmd está dentro de una subcarpeta, agrégala a esta URL.
-$urlActivador = "https://raw.githubusercontent.com/MythEnv/OfficeAutoInstallMAS/master/Ohook_Activation_AIO.cmd"
+$urlActivador = "https://raw.githubusercontent.com/MythEnv/OfficeAutoInstallMAS/refs/heads/master/MAS/Ohook_Activation_AIO.cmd"
 
 # Definir la ruta temporal donde se guardará el archivo por unos segundos
 $rutaTemporal = Join-Path -Path $env:TEMP -ChildPath "Ohook_Activation_AIO.cmd"
