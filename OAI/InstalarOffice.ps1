@@ -478,7 +478,7 @@ Write-Host "==================================================================" 
 Write-Host "             ¡INSTALACIÓN DE OFFICE 100% COMPLETADA!              " -ForegroundColor Green
 Write-Host "==================================================================" -ForegroundColor Green
 Write-Host "`n[Instalador]: Disculpa la interrupción, ya se horneó el pan y los archivos están en tu disco." -ForegroundColor Yellow
-Write-Host "`nLimpiando archivos temporales..." -ForegroundColor White
+Write-Host "`nLimpiando archivos temporales de instalación..." -ForegroundColor White
 Remove-Item -Path $tempDir -Recurse -Force
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
@@ -491,20 +491,34 @@ Start-Sleep -Seconds 1; Write-Host "2..." -ForegroundColor Yellow
 Start-Sleep -Seconds 1; Write-Host "1..." -ForegroundColor Yellow
 Start-Sleep -Seconds 1
 
-Write-Host "Activando Office de forma local y silenciosa, por favor espera..." -ForegroundColor Yellow
+Write-Host "Activando Office de forma silenciosa, por favor espera..." -ForegroundColor Yellow
 
-# --- INICIO DE LA NUEVA LÓGICA DE ACTIVACIÓN LOCAL ---
-# Identificar la carpeta padre (sube un nivel desde OAI hacia la raíz de tu proyecto)
-$carpetaPadre = Split-Path -Path $PSScriptRoot -Parent
-$rutaActivador = Join-Path -Path $carpetaPadre -ChildPath "Ohook_Activation_AIO.cmd"
+# --- INICIO DE LA LÓGICA DE ACTIVACIÓN POR DESCARGA TEMPORAL ---
+# URL Raw del activador en tu repositorio. 
+# IMPORTANTE: Si Ohook_Activation_AIO.cmd está dentro de una subcarpeta, agrégala a esta URL.
+$urlActivador = "https://raw.githubusercontent.com/MythEnv/OfficeAutoInstallMAS/master/Ohook_Activation_AIO.cmd"
 
-# Verificar si el archivo existe antes de intentar ejecutarlo
-if (Test-Path $rutaActivador) {
-    # Ejecuta cmd.exe para llamar al script .cmd con el parámetro /u (unattended/silencioso)
-    Start-Process -FilePath cmd.exe -ArgumentList "/c `"$rutaActivador`" /u" -Wait -WindowStyle Hidden
-} else {
-    Write-Host "`n[Error]: No se encontró el archivo Ohook_Activation_AIO.cmd en $rutaActivador" -ForegroundColor Red
+# Definir la ruta temporal donde se guardará el archivo por unos segundos
+$rutaTemporal = Join-Path -Path $env:TEMP -ChildPath "Ohook_Activation_AIO.cmd"
+
+try {
+    # Descargar el activador
+    Invoke-RestMethod -Uri $urlActivador -OutFile $rutaTemporal
+
+    # Verificar y ejecutar
+    if (Test-Path $rutaTemporal) {
+        # El parámetro /u asegura que el .cmd no muestre su menú interactivo
+        Start-Process -FilePath cmd.exe -ArgumentList "/c `"$rutaTemporal`" /u" -Wait -WindowStyle Hidden
+        
+        # Eliminar el archivo descargado para no dejar rastro
+        Remove-Item -Path $rutaTemporal -Force
+    } else {
+        Write-Host "`n[Error]: No se pudo guardar el archivo temporal de activación." -ForegroundColor Red
+    }
+} catch {
+    Write-Host "`n[Error]: Falló la descarga del activador. Revisa tu conexión o la URL." -ForegroundColor Red
 }
+# --- FIN DE LA LÓGICA ---
 
 Write-Host "`n==========================================" -ForegroundColor Green
 Write-Host "   ¡Proceso finalizado! Gracias por confiar en nosotros." -ForegroundColor Green
