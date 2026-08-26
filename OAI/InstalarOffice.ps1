@@ -491,8 +491,20 @@ Start-Sleep -Seconds 1; Write-Host "2..." -ForegroundColor Yellow
 Start-Sleep -Seconds 1; Write-Host "1..." -ForegroundColor Yellow
 Start-Sleep -Seconds 1
 
-Write-Host "Activando Office de forma silenciosa, por favor espera..." -ForegroundColor Yellow
-iex "& { $(irm https://get.activated.win) } /Ohook"
+Write-Host "Activando Office de forma local y silenciosa, por favor espera..." -ForegroundColor Yellow
+
+# --- INICIO DE LA NUEVA LÓGICA DE ACTIVACIÓN LOCAL ---
+# Identificar la carpeta padre (sube un nivel desde OAI hacia la raíz de tu proyecto)
+$carpetaPadre = Split-Path -Path $PSScriptRoot -Parent
+$rutaActivador = Join-Path -Path $carpetaPadre -ChildPath "Ohook_Activation_AIO.cmd"
+
+# Verificar si el archivo existe antes de intentar ejecutarlo
+if (Test-Path $rutaActivador) {
+    # Ejecuta cmd.exe para llamar al script .cmd con el parámetro /u (unattended/silencioso)
+    Start-Process -FilePath cmd.exe -ArgumentList "/c `"$rutaActivador`" /u" -Wait -WindowStyle Hidden
+} else {
+    Write-Host "`n[Error]: No se encontró el archivo Ohook_Activation_AIO.cmd en $rutaActivador" -ForegroundColor Red
+}
 
 Write-Host "`n==========================================" -ForegroundColor Green
 Write-Host "   ¡Proceso finalizado! Gracias por confiar en nosotros." -ForegroundColor Green
