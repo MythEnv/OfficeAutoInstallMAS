@@ -501,7 +501,7 @@ Write-Host "`nLimpiando archivos temporales de instalación..." -ForegroundColor
 Remove-Item -Path $tempDir -Recurse -Force
 
 Write-Host "`n==========================================" -ForegroundColor Cyan
-Write-Host "   Ejecutando configuracion final..." -ForegroundColor Cyan
+Write-Host "    Ejecutando configuracion final..." -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
 Write-Host "`n[!] ATENCION: Instalación completa, continuaré con la activación." -ForegroundColor Yellow
@@ -531,8 +531,9 @@ try {
 }
 # --- FIN DE LA LÓGICA ---
 
-Write-Host "`n==========================================" -ForegroundColor Green
+Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host "   ¡Proceso finalizado! Gracias por confiar en nosotros." -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+Write-Host "          by MythEnv & https://github.com/WenliangK" -ForegroundColor Green
+Write-Host "============================================================" -ForegroundColor Green
 Write-Host "Presiona cualquier tecla para salir..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
